@@ -33,10 +33,7 @@ export class AuthenticationsService {
       expiresIn.setDate(expiresIn.getDate() + days);
     }
 
-    console.log('password', signupDTO.password);
     signupDTO.password = await argon2.hash(signupDTO.password);
-
-    console.log('hashedpassword', signupDTO.password);
 
     try {
       const createdUser = await this.prismaService.user.create({
@@ -73,7 +70,7 @@ export class AuthenticationsService {
       const user = await this.prismaService.user.findUnique({
         where: filters,
       });
-      console.log('user', user);
+
       if (user?.status === 'INACTIVE')
         throw new ForbiddenException(
           'Access Denied. Your account is deactive.',
@@ -86,7 +83,7 @@ export class AuthenticationsService {
         signinDTO.password,
       );
 
-      console.log('user', isPasswordValid, user.password, signinDTO.password);
+      // console.log('user', isPasswordValid, user.password, signinDTO.password);
 
       if (!isPasswordValid) throw new ForbiddenException('Access Denied.');
 
