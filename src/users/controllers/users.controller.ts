@@ -47,11 +47,11 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post('create')
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create new user.' })
+  @ApiOperation({ summary: 'Create new user.(ADMIN ONLY)' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
     type: UserDTO,
@@ -75,8 +75,8 @@ export class UsersController {
   }
 
   @Get()
-  // @Roles('MANAGER', 'ADMIN')
-  // @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
+  @UseGuards(RolesGuard)
   @Version('1')
   @ApiOperation({ summary: 'Get user by criteria.' })
   @ApiOkResponse({
@@ -96,8 +96,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  // @Roles('MANAGER', 'ADMIN', 'USER')
-  // @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
+  @UseGuards(RolesGuard)
   @Version('1')
   @ApiOperation({ summary: 'Get user by id.' })
   @ApiParam({
@@ -122,8 +122,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  // @Roles('USER', 'MANAGER', 'ADMIN')
-  // @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER', 'USER')
+  @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update user details.' })
