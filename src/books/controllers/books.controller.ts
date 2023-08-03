@@ -34,8 +34,9 @@ import {
   Roles,
 } from 'src/authentications/common/decorators';
 import { RolesGuard } from 'src/authentications/common/guards';
-import { BookDTO, BookQueryDTO, CreateBookDTO, UpdateBookDTO } from '../dtos';
+import { BookQueryDTO, CreateBookDTO, UpdateBookDTO } from '../dtos';
 import { ApiExceptionResponseDTO, ApiResponseDTO } from 'src/core/dtos';
+import { Book } from '../entity';
 
 @Controller('books')
 @ApiBearerAuth('JWT')
@@ -51,7 +52,7 @@ export class BookController {
   @ApiOperation({ summary: 'Create new book.' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
-    type: BookDTO,
+    type: Book,
     description: 'Record has been created successfully.',
   })
   @ApiBody({
@@ -67,7 +68,7 @@ export class BookController {
   async create(
     @GetCurrentUserId() userId: string,
     @Body() createBookDTO: CreateBookDTO,
-  ): Promise<ApiResponseDTO<BookDTO>> {
+  ): Promise<ApiResponseDTO<Book>> {
     return await this.bookService.create(userId, createBookDTO);
   }
 
@@ -76,7 +77,7 @@ export class BookController {
   @Version('1')
   @ApiOperation({ summary: 'Get book by criteria.' })
   @ApiOkResponse({
-    type: BookDTO,
+    type: Book,
     description: 'Records have been retrieved successfully.',
     isArray: true,
   })
@@ -87,7 +88,7 @@ export class BookController {
   @ApiProduces('application/json')
   async findByCriteria(
     @Query() query: BookQueryDTO,
-  ): Promise<ApiResponseDTO<BookDTO>> {
+  ): Promise<ApiResponseDTO<Book[]>> {
     return await this.bookService.findByCriteria(query);
   }
 
@@ -103,7 +104,7 @@ export class BookController {
     required: true,
   })
   @ApiOkResponse({
-    type: BookDTO,
+    type: Book,
     description: 'Record has been retrieved successfully.',
     isArray: false,
   })
@@ -112,7 +113,7 @@ export class BookController {
     description: 'No data found.',
   })
   @ApiProduces('application/json')
-  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<BookDTO>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<Book>> {
     return await this.bookService.findOne(id);
   }
 
@@ -124,7 +125,7 @@ export class BookController {
   @ApiOperation({ summary: 'Update book details.' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: BookDTO,
+    type: Book,
   })
   @ApiBody({
     type: UpdateBookDTO,
@@ -141,7 +142,7 @@ export class BookController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updateBookDTO: UpdateBookDTO,
-  ): Promise<ApiResponseDTO<BookDTO>> {
+  ): Promise<ApiResponseDTO<Book>> {
     return await this.bookService.update(id, userId, updateBookDTO);
   }
 

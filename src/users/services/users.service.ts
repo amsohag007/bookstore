@@ -6,7 +6,6 @@ import {
   UpdatePasswordDTO,
   UpdateUserDTO,
   UpdateUserStatusDTO,
-  UserDTO,
   UserQueryDTO,
 } from '../dtos';
 import { ConfigService } from '@nestjs/config';
@@ -14,8 +13,8 @@ import * as argon2 from 'argon2';
 import { AuthenticationsService } from 'src/authentications/services';
 import { PrismaErrorHandler } from 'src/core/handlers/prisma-error.handler';
 import { NotDataFoundResponse } from 'src/core/constants';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { UserRoleEnum } from '@prisma/client';
+import { User } from '../entity';
 
 @Injectable()
 export class UsersService {
@@ -29,7 +28,7 @@ export class UsersService {
   async create(
     userId: string,
     signupDTO: CreateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     const expiresAfter = this.configService.get<string>(
       'REFRESH_TOKEN_EXPIRATION',
     );
@@ -68,7 +67,7 @@ export class UsersService {
 
       return {
         status: 'success',
-        data: new UserDTO(createdUser),
+        data: createdUser,
         message: 'Users created successfully.',
       };
     } catch (error) {
@@ -78,7 +77,7 @@ export class UsersService {
 
   // find all-------- can be filtered by criteria
 
-  async findByCriteria(query: UserQueryDTO): Promise<ApiResponseDTO<UserDTO>> {
+  async findByCriteria(query: UserQueryDTO): Promise<ApiResponseDTO<User[]>> {
     const filters = {
       email: query.email,
       role: query.role ? query.role : 'USER',
@@ -97,26 +96,22 @@ export class UsersService {
         return NotDataFoundResponse;
       }
 
-      const users = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.user.findMany({
-            orderBy: {
-              createdAt: query.orderBy,
-            },
-            take: query.pageSize,
-            skip: (query.pageIndex - 1) * query.pageSize,
-            where: filters,
-            include: {
-              orders: true,
-            },
-          }),
-        ),
-      );
+      const users = await this.prismaService.user.findMany({
+        orderBy: {
+          createdAt: query.orderBy,
+        },
+        take: query.pageSize,
+        skip: (query.pageIndex - 1) * query.pageSize,
+        where: filters,
+        include: {
+          orders: true,
+        },
+      });
 
       return {
         status: 'success',
         message: ' Users have been retrieved.',
-        data: plainToInstance(UserDTO, JSON.parse(users)),
+        data: users,
         currentPage: query.pageIndex,
         pageSize: query.pageSize,
         totalPages: totalPages,
@@ -128,27 +123,23 @@ export class UsersService {
   }
 
   //find one ------
-  async findOne(id: string): Promise<ApiResponseDTO<UserDTO>> {
+  async findOne(id: string): Promise<ApiResponseDTO<User>> {
     try {
-      const user = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.user.findUnique({
-            where: {
-              id: id,
-            },
-            include: {
-              orders: true,
-            },
-          }),
-        ),
-      );
+      const user = await this.prismaService.user.findUnique({
+        where: {
+          id: id,
+        },
+        include: {
+          orders: true,
+        },
+      });
 
-      if (JSON.parse(user) === null) {
+      if (user === null) {
         return NotDataFoundResponse;
       }
       return {
         status: 'success',
-        data: plainToInstance(UserDTO, JSON.parse(user)),
+        data: user,
         message: ' User has been retrieved.',
       };
     } catch (error) {
@@ -161,7 +152,7 @@ export class UsersService {
     id: string,
     userId: string,
     updateUserDTO: UpdateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     try {
       const updatedUserData = await this.prismaService.user.update({
         where: {
@@ -174,7 +165,7 @@ export class UsersService {
       });
       return {
         status: 'success',
-        data: new UserDTO(updatedUserData),
+        data: updatedUserData,
         message: ' Users info has been updated.',
       };
     } catch (error) {
@@ -187,7 +178,7 @@ export class UsersService {
     id: string,
     userId: string,
     updateUserPasswordDTO: UpdatePasswordDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     try {
       const user = await this.prismaService.user.findUnique({
         where: {
@@ -221,7 +212,7 @@ export class UsersService {
       return {
         status: 'success',
         message: ' Users password has been updated.',
-        data: new UserDTO(updatedUserData),
+        data: updatedUserData,
       };
     } catch (error) {
       PrismaErrorHandler(error);
@@ -233,7 +224,7 @@ export class UsersService {
     id: string,
     userId: string,
     updateUserStatusDTO: UpdateUserStatusDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     try {
       const updatedUserData = await this.prismaService.user.update({
         where: {
@@ -247,7 +238,7 @@ export class UsersService {
       return {
         status: 'success',
         message: ' User status has been updated.',
-        data: new UserDTO(updatedUserData),
+        data: updatedUserData,
       };
     } catch (error) {
       PrismaErrorHandler(error);

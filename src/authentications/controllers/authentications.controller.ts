@@ -32,7 +32,7 @@ import {
   RolesGuard,
 } from '../common/guards';
 import { ApiResponseDTO } from 'src/core/dtos';
-import { UserDTO } from 'src/users/dtos';
+import { User } from 'src/users/entity';
 
 @Controller('auth')
 @ApiTags('Authorization')
@@ -114,13 +114,13 @@ export class AuthenticationsController {
   @ApiProduces('application/json')
   @ApiOperation({ summary: 'Logged In user info' })
   @ApiOkResponse({
-    type: UserDTO,
+    type: User,
     description: 'Record has been retrieved successfully.',
     isArray: false,
   })
   getCurrentUser(
     @GetCurrentUserId() userId: string,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     return this.authenticationsService.getCurrentUser(userId);
   }
 }

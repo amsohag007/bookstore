@@ -12,7 +12,7 @@ import { SignInDTO, SignupDTO } from '../dtos';
 import { JwtPayload, Tokens } from '../types';
 import { PrismaErrorHandler } from 'src/core/handlers/prisma-error.handler';
 import { ApiResponseDTO } from 'src/core/dtos';
-import { UserDTO } from 'src/users/dtos';
+import { User } from 'src/users/entity';
 
 @Injectable()
 export class AuthenticationsService {
@@ -224,7 +224,7 @@ export class AuthenticationsService {
     }
   }
 
-  async getCurrentUser(userId: string): Promise<ApiResponseDTO<UserDTO>> {
+  async getCurrentUser(userId: string): Promise<ApiResponseDTO<User>> {
     try {
       const user = await this.prismaService.user.findFirst({
         where: { id: userId },
@@ -233,7 +233,7 @@ export class AuthenticationsService {
       return {
         status: 'success',
         message: ' User has been retrieved.',
-        data: new UserDTO(user),
+        data: user,
       };
     } catch (error) {
       PrismaErrorHandler(error);
