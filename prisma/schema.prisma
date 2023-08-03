@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// list of field status type
+enum FieldStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatusEnum {
+  PENDING
+  RECEIVED
+  DELIVERED
+  COMPLETED
+}
+
+model User {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// user's first name
+  firstName String? @db.VarChar(255)
+  /// user's last name
+  lastName  String? @db.VarChar(255)
+  /// user's username which will be used for creating an account
+  userName  String  @unique @db.VarChar(255)
+  /// user's email 
+  email     String  @unique @db.VarChar(255)
+  /// user's phone
+  phone     String? @unique @db.VarChar(255)
+  /// user's password
+  password  String? @db.VarChar(255)
+  /// user's address
+  address   Json?   @default("{}")
+
+  /// user default point is 100
+  point Int @default(100)
+
+  metaData    Json?           @default("{}")
+  status      FieldStatusEnum @default(ACTIVE)
+  createdById String?         @db.Uuid
+  updatedById String?         @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt
+
+  orders Order[]
+
+  @@index([userName, email])
+}
+
+model Book {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  title      String
+  writer     String
+  coverImage String
+  price      Int
+  tags       String[]
+
+  metaData    Json?           @default("{}")
+  status      FieldStatusEnum @default(ACTIVE)
+  createdById String?         @db.Uuid
+  updatedById String?         @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// current status of order
+  orderStatus OrderStatusEnum @default(PENDING)
+
+  metaData    Json?           @default("{}")
+  status      FieldStatusEnum @default(ACTIVE)
+  createdById String?         @db.Uuid
+  updatedById String?         @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt
+
+  /// ID of associated user
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderItems OrderItem[]
+}
+
+/// helping table to hold multiple books for a single order
+model OrderItem {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  metaData    Json?           @default("{}")
+  status      FieldStatusEnum @default(ACTIVE)
+  createdById String?         @db.Uuid
+  updatedById String?         @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt
+
+  orderId String? @db.Uuid
+  orders  Order?  @relation(fields: [orderId], references: [id])
+
+  bookId String? @db.Uuid
+  books  Book?   @relation(fields: [bookId], references: [id])
+}
