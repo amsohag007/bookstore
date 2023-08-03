@@ -7,9 +7,13 @@ import {
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
+import { HttpExceptionFilter } from './core/handlers/http-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // we can use this line to globally enable
   // for all controllers
@@ -25,8 +29,8 @@ async function bootstrap() {
 
   // swagger api documentation setup
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Nest Crud Api Documentation')
-    .setDescription('The core api of Nest Crud App')
+    .setTitle('NX-BilDialog Api Documentation')
+    .setDescription('The core api of NX-Bildialog')
     .setVersion('1.0')
     .addTag('API')
     .addBearerAuth(
@@ -38,8 +42,14 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT || 4000);
+  await app.listen(process.env.PORT || 3333, '0.0.0.0');
 
-  console.log(`App running on:${await app.getUrl()}`);
+  console.log(
+    '\x1b[35m',
+    `🚀 Application is running on: ${await app.getUrl()}`,
+  );
+  console.log(
+    `🚀 Api documentions available at: http://localhost:${process.env.PORT}/api/docs`,
+  );
 }
 bootstrap();
