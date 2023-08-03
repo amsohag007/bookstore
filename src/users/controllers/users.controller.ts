@@ -36,9 +36,9 @@ import {
   UpdatePasswordDTO,
   UpdateUserDTO,
   UpdateUserStatusDTO,
-  UserDTO,
   UserQueryDTO,
 } from '../dtos';
+import { User } from '../entity';
 
 @Controller('users')
 @ApiBearerAuth('JWT')
@@ -54,7 +54,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Create new user.(ADMIN ONLY)' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
-    type: UserDTO,
+    type: User,
     description: 'Record has been created successfully.',
   })
   @ApiBody({
@@ -70,7 +70,7 @@ export class UsersController {
   async create(
     @GetCurrentUserId() userId: string,
     @Body() createUserDTO: CreateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     return await this.usersService.create(userId, createUserDTO);
   }
 
@@ -80,7 +80,7 @@ export class UsersController {
   @Version('1')
   @ApiOperation({ summary: 'Get user by criteria.' })
   @ApiOkResponse({
-    type: UserDTO,
+    type: User,
     description: 'Records have been retrieved successfully.',
     isArray: true,
   })
@@ -91,7 +91,7 @@ export class UsersController {
   @ApiProduces('application/json')
   async findByCriteria(
     @Query() query: UserQueryDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User[]>> {
     return await this.usersService.findByCriteria(query);
   }
 
@@ -108,7 +108,7 @@ export class UsersController {
     required: true,
   })
   @ApiOkResponse({
-    type: UserDTO,
+    type: User,
     description: 'Record has been retrieved successfully.',
     isArray: false,
   })
@@ -117,7 +117,7 @@ export class UsersController {
     description: 'No data found.',
   })
   @ApiProduces('application/json')
-  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<UserDTO>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<User>> {
     return await this.usersService.findOne(id);
   }
 
@@ -129,7 +129,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user details.' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: UserDTO,
+    type: User,
   })
   @ApiBody({
     type: UpdateUserDTO,
@@ -146,7 +146,7 @@ export class UsersController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updateUserDTO: UpdateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     return await this.usersService.update(id, userId, updateUserDTO);
   }
 
@@ -158,7 +158,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user password.' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: UserDTO,
+    type: User,
   })
   @ApiBody({
     type: UpdatePasswordDTO,
@@ -175,7 +175,7 @@ export class UsersController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updatePasswordDTO: UpdatePasswordDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     return await this.usersService.updatePassword(
       id,
       userId,
@@ -191,7 +191,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user status.' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: UserDTO,
+    type: User,
   })
   @ApiBody({
     type: UpdateUserStatusDTO,
@@ -208,7 +208,7 @@ export class UsersController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updateStatusDTO: UpdateUserStatusDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
+  ): Promise<ApiResponseDTO<User>> {
     return await this.usersService.updateStatus(id, userId, updateStatusDTO);
   }
 

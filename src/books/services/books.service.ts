@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PrismaService } from 'src/core/services';
-import { BookDTO, BookQueryDTO, CreateBookDTO, UpdateBookDTO } from '../dtos';
+import { BookQueryDTO, CreateBookDTO, UpdateBookDTO } from '../dtos';
 import { ApiResponseDTO } from 'src/core/dtos';
 import { PrismaErrorHandler } from 'src/core/handlers/prisma-error.handler';
 import { NotDataFoundResponse } from 'src/core/constants';
+import { Book } from '../entity';
 
 @Injectable()
 export class BookService {
@@ -14,7 +14,7 @@ export class BookService {
   async create(
     userId: string,
     createBookDTO: CreateBookDTO,
-  ): Promise<ApiResponseDTO<BookDTO>> {
+  ): Promise<ApiResponseDTO<Book>> {
     try {
       const createdBook = await this.prismaService.book.create({
         data: {
@@ -25,7 +25,7 @@ export class BookService {
 
       return {
         status: 'success',
-        data: new BookDTO(createdBook),
+        data: createdBook,
         message: 'Books has been successfully created.',
       };
     } catch (error) {
@@ -34,7 +34,7 @@ export class BookService {
   }
 
   // find all-------- can be filtered by criteria
-  async findByCriteria(query: BookQueryDTO): Promise<ApiResponseDTO<BookDTO>> {
+  async findByCriteria(query: BookQueryDTO): Promise<ApiResponseDTO<Book[]>> {
     const filters = {
       status: query.status,
       title: query.title,
@@ -51,23 +51,19 @@ export class BookService {
         return NotDataFoundResponse;
       }
 
-      const book = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.book.findMany({
-            orderBy: {
-              createdAt: query.orderBy,
-            },
-            take: query.pageSize,
-            skip: (query.pageIndex - 1) * query.pageSize,
-            where: filters,
-          }),
-        ),
-      );
+      const books = await this.prismaService.book.findMany({
+        orderBy: {
+          createdAt: query.orderBy,
+        },
+        take: query.pageSize,
+        skip: (query.pageIndex - 1) * query.pageSize,
+        where: filters,
+      });
 
       return {
         status: 'success',
         message: 'Books retrieve successful.',
-        data: plainToInstance(BookDTO, JSON.parse(book)),
+        data: books,
         currentPage: query.pageIndex,
         pageSize: query.pageSize,
         totalPages: totalPages,
@@ -79,24 +75,20 @@ export class BookService {
   }
 
   //find one ------
-  async findOne(id: string): Promise<ApiResponseDTO<BookDTO>> {
+  async findOne(id: string): Promise<ApiResponseDTO<Book>> {
     try {
-      const notebook = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.book.findUnique({
-            where: {
-              id: id,
-            },
-          }),
-        ),
-      );
+      const book = await this.prismaService.book.findUnique({
+        where: {
+          id: id,
+        },
+      });
 
-      if (JSON.parse(notebook) === null) {
+      if (book === null) {
         return NotDataFoundResponse;
       }
       return {
         status: 'success',
-        data: plainToInstance(BookDTO, JSON.parse(notebook)),
+        data: book,
         message: 'Books retrieve successful.',
       };
     } catch (error) {
@@ -107,9 +99,9 @@ export class BookService {
   //update ----------
   async update(
     id: string,
-    userId,
+    userId: string,
     updateBookDTO: UpdateBookDTO,
-  ): Promise<ApiResponseDTO<BookDTO>> {
+  ): Promise<ApiResponseDTO<Book>> {
     try {
       const updatedBookData = await this.prismaService.book.update({
         where: {
@@ -122,7 +114,7 @@ export class BookService {
       });
       return {
         status: 'success',
-        data: new BookDTO(updatedBookData),
+        data: updatedBookData,
         message: ' Books info has been updated.',
       };
     } catch (error) {

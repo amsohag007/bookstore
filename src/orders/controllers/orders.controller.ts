@@ -35,13 +35,13 @@ import {
 } from 'src/authentications/common/decorators';
 import { RolesGuard } from 'src/authentications/common/guards';
 import {
-  OrderDTO,
   OrderQueryDTO,
   CreateOrderDTO,
   UpdateOrderDTO,
   UpdateOrderStausDTO,
 } from '../dtos';
 import { ApiExceptionResponseDTO, ApiResponseDTO } from 'src/core/dtos';
+import { Order } from '../entity';
 
 @Controller('orders')
 @ApiBearerAuth('JWT')
@@ -57,7 +57,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Create new order.' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
-    type: OrderDTO,
+    type: Order,
     description: 'Record has been created successfully.',
   })
   @ApiBody({
@@ -73,7 +73,7 @@ export class OrderController {
   async create(
     @GetCurrentUserId() userId: string,
     @Body() createOrderDTO: CreateOrderDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     return await this.orderService.create(userId, createOrderDTO);
   }
 
@@ -83,7 +83,7 @@ export class OrderController {
   @Version('1')
   @ApiOperation({ summary: 'Get order by criteria.' })
   @ApiOkResponse({
-    type: OrderDTO,
+    type: Order,
     description: 'Records have been retrieved successfully.',
     isArray: true,
   })
@@ -94,7 +94,7 @@ export class OrderController {
   @ApiProduces('application/json')
   async findByCriteria(
     @Query() query: OrderQueryDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order[]>> {
     return await this.orderService.findByCriteria(query);
   }
 
@@ -111,7 +111,7 @@ export class OrderController {
     required: true,
   })
   @ApiOkResponse({
-    type: OrderDTO,
+    type: Order,
     description: 'Record has been retrieved successfully.',
     isArray: false,
   })
@@ -120,7 +120,7 @@ export class OrderController {
     description: 'No data found.',
   })
   @ApiProduces('application/json')
-  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<OrderDTO>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<Order>> {
     return await this.orderService.findOne(id);
   }
 
@@ -132,7 +132,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Update order details' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: OrderDTO,
+    type: Order,
   })
   @ApiBody({
     type: UpdateOrderDTO,
@@ -149,7 +149,7 @@ export class OrderController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updateOrderDTO: UpdateOrderDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     return await this.orderService.update(id, userId, updateOrderDTO);
   }
 
@@ -161,7 +161,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Update order status.(to cancel order or deliver)' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: OrderDTO,
+    type: Order,
   })
   @ApiBody({
     type: UpdateOrderStausDTO,
@@ -178,7 +178,7 @@ export class OrderController {
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
     @Body() updateOrderStatusDTO: UpdateOrderStausDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     return await this.orderService.updateStatus(
       id,
       userId,

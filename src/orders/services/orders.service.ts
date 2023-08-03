@@ -3,10 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PrismaService } from 'src/core/services';
 import {
-  OrderDTO,
   OrderQueryDTO,
   CreateOrderDTO,
   UpdateOrderDTO,
@@ -15,6 +13,7 @@ import {
 import { ApiResponseDTO } from 'src/core/dtos';
 import { PrismaErrorHandler } from 'src/core/handlers/prisma-error.handler';
 import { NotDataFoundResponse } from 'src/core/constants';
+import { Order } from '../entity';
 
 @Injectable()
 export class OrderService {
@@ -24,7 +23,7 @@ export class OrderService {
   async create(
     userId: string,
     createOrderDTO: CreateOrderDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     try {
       const books = await this.prismaService.book.findMany({
         where: {
@@ -84,7 +83,7 @@ export class OrderService {
 
       return {
         status: 'success',
-        data: new OrderDTO(order),
+        data: order,
         message: 'Orders has been successfully created.',
       };
     } catch (error) {
@@ -93,9 +92,7 @@ export class OrderService {
   }
 
   // find all-------- can be filtered by criteria
-  async findByCriteria(
-    query: OrderQueryDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  async findByCriteria(query: OrderQueryDTO): Promise<ApiResponseDTO<Order[]>> {
     const filters = {
       status: query.status,
       userId: query.userId,
@@ -111,30 +108,26 @@ export class OrderService {
         return NotDataFoundResponse;
       }
 
-      const orders = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.order.findMany({
-            orderBy: {
-              createdAt: query.orderBy,
-            },
-            take: query.pageSize,
-            skip: (query.pageIndex - 1) * query.pageSize,
-            where: filters,
+      const orders = await this.prismaService.order.findMany({
+        orderBy: {
+          createdAt: query.orderBy,
+        },
+        take: query.pageSize,
+        skip: (query.pageIndex - 1) * query.pageSize,
+        where: filters,
+        include: {
+          orderItems: {
             include: {
-              orderItems: {
-                include: {
-                  books: true,
-                },
-              },
+              books: true,
             },
-          }),
-        ),
-      );
+          },
+        },
+      });
 
       return {
         status: 'success',
         message: 'Orders retrieve successful.',
-        data: plainToInstance(OrderDTO, JSON.parse(orders)),
+        data: orders,
         currentPage: query.pageIndex,
         pageSize: query.pageSize,
         totalPages: totalPages,
@@ -146,31 +139,27 @@ export class OrderService {
   }
 
   //find one ------
-  async findOne(id: string): Promise<ApiResponseDTO<OrderDTO>> {
+  async findOne(id: string): Promise<ApiResponseDTO<Order>> {
     try {
-      const order = JSON.stringify(
-        instanceToPlain(
-          await this.prismaService.order.findUnique({
-            where: {
-              id: id,
-            },
+      const order = await this.prismaService.order.findUnique({
+        where: {
+          id: id,
+        },
+        include: {
+          orderItems: {
             include: {
-              orderItems: {
-                include: {
-                  books: true,
-                },
-              },
+              books: true,
             },
-          }),
-        ),
-      );
+          },
+        },
+      });
 
-      if (JSON.parse(order) === null) {
+      if (order === null) {
         return NotDataFoundResponse;
       }
       return {
         status: 'success',
-        data: plainToInstance(OrderDTO, JSON.parse(order)),
+        data: order,
         message: 'Orders retrieve successful.',
       };
     } catch (error) {
@@ -183,7 +172,7 @@ export class OrderService {
     id: string,
     userId: string,
     updateOrderDTO: UpdateOrderDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     try {
       const updatedOrderData = await this.prismaService.order.update({
         where: {
@@ -196,7 +185,7 @@ export class OrderService {
       });
       return {
         status: 'success',
-        data: new OrderDTO(updatedOrderData),
+        data: updatedOrderData,
         message: ' Orders info has been updated.',
       };
     } catch (error) {
@@ -209,7 +198,7 @@ export class OrderService {
     id: string,
     userId: string,
     updateOrderStausDTO: UpdateOrderStausDTO,
-  ): Promise<ApiResponseDTO<OrderDTO>> {
+  ): Promise<ApiResponseDTO<Order>> {
     try {
       const updatedOrderData = await this.prismaService.order.update({
         where: {
@@ -222,7 +211,7 @@ export class OrderService {
       });
       return {
         status: 'success',
-        data: new OrderDTO(updatedOrderData),
+        data: updatedOrderData,
         message: ' Orders info has been updated.',
       };
     } catch (error) {
