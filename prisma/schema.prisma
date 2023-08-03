@@ -51,9 +51,32 @@ model User {
   createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime?       @updatedAt
 
-  orders Order[]
+  orders           Order[]
+  authRefreshToken AuthRefreshToken?
 
   @@index([userName, email])
+}
+
+model AuthRefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// refresh token
+  token     String?  @db.VarChar(1000)
+  /// check if the token is revoked?
+  isRevoked Boolean  @default(false)
+  /// refresh token expire date
+  expiresAt DateTime @default(now()) @db.Timestamptz(6)
+
+  metaData    Json?           @default("{}")
+  status      FieldStatusEnum @default(ACTIVE)
+  createdById String?         @db.Uuid
+  updatedById String?         @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt @db.Timestamptz(6)
+
+  /// ID of associated user
+  userId String @unique @db.Uuid
+  /// refresh token will be removed if userAccount is being deleted
+  users  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Book {
