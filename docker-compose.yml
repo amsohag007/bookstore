@@ -1,0 +1,16 @@
+version: '1.0'
+services:
+  postgres:
+    image: postgres:13
+    container_name: nest-postgres
+    restart: always
+    ports:
+      - 5444:5432
+    env_file:
+      - .env
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+volumes:
+  postgres:
+    name: nest-prisma-db
