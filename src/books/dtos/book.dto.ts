@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsDefined, IsNumber, IsString } from 'class-validator';
 import { BaseDTO } from 'src/core/dtos';
 
 export class BookDTO extends BaseDTO {
@@ -42,10 +42,11 @@ export class BookDTO extends BaseDTO {
   @ApiProperty({
     description: 'Book tags',
     type: String,
+    isArray: true,
     required: true,
   })
   @IsDefined()
-  @IsString()
+  @IsArray()
   tags: string[];
 
   constructor(partial: Partial<BookDTO>) {
