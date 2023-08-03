@@ -9,8 +9,8 @@ import {
   Patch,
   Post,
   Query,
-  Version,
   UseGuards,
+  Version,
 } from '@nestjs/common';
 
 import {
@@ -27,38 +27,41 @@ import {
   ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
-import { UsersService } from 'src/users/services';
-import { ApiExceptionResponseDTO, ApiResponseDTO } from 'src/core/dtos';
-import { GetCurrentUserId, Roles } from 'src/authentications/common/decorators';
+import { OrderService } from '../services';
+import {
+  GetCurrentUserId,
+  Public,
+  Roles,
+} from 'src/authentications/common/decorators';
 import { RolesGuard } from 'src/authentications/common/guards';
 import {
-  CreateUserDTO,
-  UpdatePasswordDTO,
-  UpdateUserDTO,
-  UpdateUserStatusDTO,
-  UserDTO,
-  UserQueryDTO,
+  OrderDTO,
+  OrderQueryDTO,
+  CreateOrderDTO,
+  UpdateOrderDTO,
+  UpdateOrderStausDTO,
 } from '../dtos';
+import { ApiExceptionResponseDTO, ApiResponseDTO } from 'src/core/dtos';
 
-@Controller('users')
+@Controller('orders')
 @ApiBearerAuth('JWT')
-@ApiTags('User API')
-export class UsersController {
-  constructor(private usersService: UsersService) {}
+@ApiTags('Orders API')
+export class OrderController {
+  constructor(private orderService: OrderService) {}
 
-  @Post('create')
-  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
+  @Post()
+  @Roles('USER')
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create new user.(ADMIN ONLY)' })
+  @ApiOperation({ summary: 'Create new order.' })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
-    type: UserDTO,
+    type: OrderDTO,
     description: 'Record has been created successfully.',
   })
   @ApiBody({
-    type: CreateUserDTO,
+    type: CreateOrderDTO,
     description: 'Data to create new record..',
     required: true,
   })
@@ -69,18 +72,18 @@ export class UsersController {
   @ApiProduces('application/json')
   async create(
     @GetCurrentUserId() userId: string,
-    @Body() createUserDTO: CreateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.create(userId, createUserDTO);
+    @Body() createOrderDTO: CreateOrderDTO,
+  ): Promise<ApiResponseDTO<OrderDTO>> {
+    return await this.orderService.create(userId, createOrderDTO);
   }
 
   @Get()
-  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
+  @Roles('USER', 'MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
-  @ApiOperation({ summary: 'Get user by criteria.' })
+  @ApiOperation({ summary: 'Get order by criteria.' })
   @ApiOkResponse({
-    type: UserDTO,
+    type: OrderDTO,
     description: 'Records have been retrieved successfully.',
     isArray: true,
   })
@@ -90,25 +93,25 @@ export class UsersController {
   })
   @ApiProduces('application/json')
   async findByCriteria(
-    @Query() query: UserQueryDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.findByCriteria(query);
+    @Query() query: OrderQueryDTO,
+  ): Promise<ApiResponseDTO<OrderDTO>> {
+    return await this.orderService.findByCriteria(query);
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'MANAGER', 'USER') // added user for testing purpose
+  @Roles('USER', 'MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
-  @ApiOperation({ summary: 'Get user by id.' })
+  @ApiOperation({ summary: 'Get order by id.' })
   @ApiParam({
     name: 'id',
-    description: 'Should be an id of a user that exists in the database.',
+    description: 'Should be an id of a order that exists in the database.',
     type: String,
     format: 'uuid',
     required: true,
   })
   @ApiOkResponse({
-    type: UserDTO,
+    type: OrderDTO,
     description: 'Record has been retrieved successfully.',
     isArray: false,
   })
@@ -117,22 +120,22 @@ export class UsersController {
     description: 'No data found.',
   })
   @ApiProduces('application/json')
-  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<ApiResponseDTO<OrderDTO>> {
+    return await this.orderService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'MANAGER', 'USER')
+  @Roles('USER', 'MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update user details.' })
+  @ApiOperation({ summary: 'Update order details' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: UserDTO,
+    type: OrderDTO,
   })
   @ApiBody({
-    type: UpdateUserDTO,
+    type: UpdateOrderDTO,
     description: 'Data to update record.',
     required: true,
   })
@@ -145,56 +148,23 @@ export class UsersController {
   async update(
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
-    @Body() updateUserDTO: UpdateUserDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.update(id, userId, updateUserDTO);
-  }
-
-  @Patch(':id/password')
-  @Roles('USER', 'ADMIN')
-  @UseGuards(RolesGuard)
-  @Version('1')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update user password.' })
-  @ApiOkResponse({
-    description: 'Record has been updated successfully.',
-    type: UserDTO,
-  })
-  @ApiBody({
-    type: UpdatePasswordDTO,
-    description: 'Data to update record.',
-    required: true,
-  })
-  @ApiNotFoundResponse({
-    type: ApiExceptionResponseDTO,
-    description: 'No data found.',
-  })
-  @ApiConsumes('application/json')
-  @ApiProduces('application/json')
-  async updatePassword(
-    @Param('id') id: string,
-    @GetCurrentUserId() userId: string,
-    @Body() updatePasswordDTO: UpdatePasswordDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.updatePassword(
-      id,
-      userId,
-      updatePasswordDTO,
-    );
+    @Body() updateOrderDTO: UpdateOrderDTO,
+  ): Promise<ApiResponseDTO<OrderDTO>> {
+    return await this.orderService.update(id, userId, updateOrderDTO);
   }
 
   @Patch(':id/status')
-  @Roles('USER', 'ADMIN')
+  @Roles('USER', 'MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update user status.' })
+  @ApiOperation({ summary: 'Update order status.(to cancel order or deliver)' })
   @ApiOkResponse({
     description: 'Record has been updated successfully.',
-    type: UserDTO,
+    type: OrderDTO,
   })
   @ApiBody({
-    type: UpdateUserStatusDTO,
+    type: UpdateOrderStausDTO,
     description: 'Data to update record.',
     required: true,
   })
@@ -207,20 +177,24 @@ export class UsersController {
   async updateStatus(
     @Param('id') id: string,
     @GetCurrentUserId() userId: string,
-    @Body() updateStatusDTO: UpdateUserStatusDTO,
-  ): Promise<ApiResponseDTO<UserDTO>> {
-    return await this.usersService.updateStatus(id, userId, updateStatusDTO);
+    @Body() updateOrderStatusDTO: UpdateOrderStausDTO,
+  ): Promise<ApiResponseDTO<OrderDTO>> {
+    return await this.orderService.updateStatus(
+      id,
+      userId,
+      updateOrderStatusDTO,
+    );
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete user.' })
+  @ApiOperation({ summary: 'Delete order.' })
   @ApiParam({
     name: 'id',
-    description: 'Should be an id of user that exists in the database.',
+    description: 'Should be an id of order that exists in the database.',
     type: String,
     format: 'uuid',
     required: true,
@@ -233,6 +207,6 @@ export class UsersController {
     description: 'No data found.',
   })
   async remove(@Param('id') id: string) {
-    return await this.usersService.remove(id);
+    return await this.orderService.remove(id);
   }
 }

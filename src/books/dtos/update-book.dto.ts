@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import {
+  IsArray,
   IsDefined,
   IsNumber,
   IsObject,
@@ -48,10 +49,11 @@ export class UpdateBookDTO {
   @ApiProperty({
     description: 'Book tags',
     type: String,
+    isArray: true,
     required: true,
   })
   @IsDefined()
-  @IsString()
+  @IsArray()
   tags: string[];
 
   @ApiPropertyOptional({

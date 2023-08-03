@@ -44,7 +44,7 @@ export class BookController {
   constructor(private bookService: BookService) {}
 
   @Post()
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('USER', 'MANAGER', 'ADMIN') /// added access for user for testing purpose
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
@@ -117,7 +117,7 @@ export class BookController {
   }
 
   @Patch(':id')
-  @Roles('MANAGER', 'ADMIN')
+  @Roles('USER', 'MANAGER', 'ADMIN')
   @UseGuards(RolesGuard)
   @Version('1')
   @HttpCode(HttpStatus.OK)

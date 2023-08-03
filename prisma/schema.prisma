@@ -18,6 +18,7 @@ enum FieldStatusEnum {
 
 enum OrderStatusEnum {
   PENDING
+  CANCELED
   RECEIVED
   DELIVERED
   COMPLETED
@@ -95,6 +96,7 @@ model AuthRefreshToken {
   users  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// will be used for forgot password feature
 model AuthVerificationToken {
   id             String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   /// type of verification token
