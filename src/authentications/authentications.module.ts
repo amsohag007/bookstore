@@ -9,10 +9,11 @@ import {
 import { AuthPasswordsService, AuthenticationsService } from './services';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies';
 import { MailsModule } from 'src/mails/mails.module';
+import { CoreModule } from '@src/core/core.module';
 
 @Global()
 @Module({
-  imports: [MailsModule, PassportModule, JwtModule.register({})],
+  imports: [CoreModule, MailsModule, PassportModule, JwtModule.register({})],
   controllers: [AuthenticationsController, AuthPasswordsController],
 
   providers: [

@@ -15,12 +15,14 @@ import {
   VerifyPasswordResetCodeDTO,
 } from '../dtos';
 import { PrismaErrorHandler } from 'src/core/handlers/prisma-error.handler';
+import { EmailProducer } from '@src/core/rabbitmq/email.producer';
 
 @Injectable()
 export class AuthPasswordsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly mailsService: MailsService,
+    private readonly emailProducer: EmailProducer,
   ) {}
   async initiatePasswordVerification(forgotPasswordDTO: ForgotPasswordDTO) {
     try {
@@ -72,20 +74,34 @@ export class AuthPasswordsService {
       }
 
       if (forgotPasswordDTO.type === 'EMAIL') {
-        const isEmailSent = await this.mailsService.sendEmail(
+        // Use the OrderProducer to send email request
+        await this.emailProducer.sendEmailRequest(
           userData.email,
           'Welcome to BookStore. Kindly Reset Password',
           './password-reset',
           { userId: userData.id, verificationCode: verificationCode },
         );
 
-        if (isEmailSent) {
-          return {
-            status: 'success',
-            message:
-              'Email verification code for resetting password is sent successfully.',
-          };
-        }
+        // const isEmailSent = await this.mailsService.sendEmail(
+        //   userData.email,
+        //   'Welcome to BookStore. Kindly Reset Password',
+        //   './password-reset',
+        //   { userId: userData.id, verificationCode: verificationCode },
+        // );
+
+        // if (isEmailSent) {
+        //   return {
+        //     status: 'success',
+        //     message:
+        //       'Email verification code for resetting password is sent successfully.',
+        //   };
+        // }
+
+        return {
+          status: 'success',
+          message:
+            'Email verification code for resetting password is sent successfully.',
+        };
       }
     } catch (error) {
       PrismaErrorHandler(error);
