@@ -1,7 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import * as Joi from 'joi';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
 import { AuthenticationsModule } from './authentications/authentications.module';
@@ -41,9 +39,8 @@ import { LoggingMiddleware } from './core/middleware';
     BooksModule,
     OrdersModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,

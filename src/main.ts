@@ -29,10 +29,9 @@ async function bootstrap() {
 
   // swagger api documentation setup
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('NX-BilDialog Api Documentation')
-    .setDescription('The core api of NX-Bildialog')
+    .setTitle('BookStore Api Documentation')
+    .setDescription('The core api of BookStore')
     .setVersion('1.0')
-    .addTag('API')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'JWT',
