@@ -2,20 +2,25 @@ import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
-import { AuthenticationsController } from './controllers';
-import { AuthenticationsService } from './services';
+import {
+  AuthPasswordsController,
+  AuthenticationsController,
+} from './controllers';
+import { AuthPasswordsService, AuthenticationsService } from './services';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies';
-import { ConfigModule } from '@nestjs/config';
+import { MailsModule } from 'src/mails/mails.module';
+import { CoreModule } from '@src/core/core.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule, PassportModule, JwtModule.register({})],
-  controllers: [AuthenticationsController],
+  imports: [CoreModule, MailsModule, PassportModule, JwtModule.register({})],
+  controllers: [AuthenticationsController, AuthPasswordsController],
 
   providers: [
     AccessTokenStrategy,
     RefreshTokenStrategy,
     AuthenticationsService,
+    AuthPasswordsService,
   ],
   exports: [JwtModule, AuthenticationsService],
 })

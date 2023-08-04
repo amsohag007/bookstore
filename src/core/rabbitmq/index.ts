@@ -1,1 +1,2 @@
-export * from './rabbitmq.producer';
+export * from './email.consumer';
+export * from './email.producer';

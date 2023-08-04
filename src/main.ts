@@ -8,6 +8,7 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { HttpExceptionFilter } from './core/handlers/http-exceptions.filter';
+import { EmailConsumer } from './core/rabbitmq/email.consumer';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -40,6 +41,10 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
+
+  // Start the email consumer to listen for emails
+  const emailConsumer = app.get(EmailConsumer);
+  emailConsumer.startListening();
 
   await app.listen(process.env.PORT || 3333, '0.0.0.0');
 
