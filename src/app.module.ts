@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './authentications/common/guards';
 import { LoggingMiddleware } from './core/middleware';
+import { EmailConsumer } from './core/rabbitmq/email.consumer';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { LoggingMiddleware } from './core/middleware';
   controllers: [AppController],
   providers: [
     AppService,
+    EmailConsumer,
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
