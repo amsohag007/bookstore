@@ -1,7 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import * as Joi from 'joi';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
 import { AuthenticationsModule } from './authentications/authentications.module';
@@ -42,9 +40,8 @@ import { EmailConsumer } from './core/rabbitmq/email.consumer';
     BooksModule,
     OrdersModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     EmailConsumer,
     {
       provide: APP_GUARD,
